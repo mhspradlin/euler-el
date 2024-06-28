@@ -73,7 +73,7 @@ euler1
 (require 'dash)
 (iter-defun naturals ()
   "All natural numbers (0, 1, 2, ...)"
-  (let ((n 0))
+      (let ((n 0))
     (while t
       (iter-yield n)
       (setq n (+ n 1)))))
@@ -184,3 +184,50 @@ euler1
  (euler-p4-arrow) ; Same answer
  (-table-flat #'list '(1 2 3) '(1 2 3))
 )
+
+;; p5
+;; What is the smallest positive number evenly divisible by all numbers from 1 to 10?
+
+;; Approach: There's some overlap in the numbers -- if 2 and 4 are factors, then
+;; 8 is already covered so we don't need to add it in.
+;; So, let's start from the highest number. Calculate its factors, then only
+;; add lower numbers if they are not a factor of an already added number.
+;; I don't think that will work. Consider 20, then 16. 16 is not a factor of 20, but we
+;; would add 4 twos on top of the 2 twos we already have from 20. Not so good.
+;; Let's try to check all the numbers first and go from there if it's too slow.
+
+(defun int-range (start-inclusive end-exclusive)
+  "Create a list from start-inclusive to end-exclusive"
+  (-iterate #'1+ start-inclusive (- end-exclusive start-inclusive)))
+
+(defun divisible-by-all? (divisors n)
+  "Returns t if n is divisible by all of divisors"
+  (-all? (-partial #'divides? n) divisors))
+
+;; This takes too long checking all of 1 to 20
+;; Remove obvious ones:
+;; - No need to check 1
+;; - If divisible by 10 and 2, then also divisible by 20
+;; - Vice versa more useful, if divisible by 20 then also by 4, 2, 10, etc.
+;; - (11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
+;; Still too long
+;; No sense in moving by ones, since result will be even
+;; Can we move by twenties? I think so, since we know it's a multiple of 20
+;; Moving by twenties, no need to check for divisibility by 20 or its divisors
+;; It takes a minute or so, but works
+(defun euler-p5 ()
+  (let* ((eleven-to-nineteen (int-range 11 20))
+         (current-num 20)
+         (found nil))
+    (while (not found)
+      (if (divisible-by-all? eleven-to-nineteen current-num)
+          (setq found t)
+          (setq current-num (+ 20 current-num))))
+    current-num))
+
+(comment
+ (int-range 10 20)
+ (divisible-by-all? '(1 2 3) 6)
+ (divisible-by-all? '(1 2 3) 7)
+ (euler-p5) ; Works, takes a minute => 232792560
+ )
