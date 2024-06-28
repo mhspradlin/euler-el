@@ -169,10 +169,18 @@ euler1
     (setq palindromes (-filter #'is-palindrome? three-digit-sums))
     (apply #'max palindromes)))
 
+(defun euler-p4-arrow ()
+  (--> (-iterate #'1+ 100 900)
+       (-table-flat #'list it it)
+       (-map #'-product it)
+       (-filter #'is-palindrome? it)
+       (apply #'max it)))
+
 (comment
  (is-palindrome? 100)
  (is-palindrome? 101)
  (-iterate #'1+ 100 900)
  (euler-p4) ; => 906609
-
+ (euler-p4-arrow) ; Same answer
+ (-table-flat #'list '(1 2 3) '(1 2 3))
 )
