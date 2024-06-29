@@ -231,3 +231,62 @@ euler1
  (divisible-by-all? '(1 2 3) 7)
  (euler-p5) ; Works, takes a minute => 232792560
  )
+
+;; P6
+;; Sum of squares of 1 -> 100 minus square of sum of 1 -> 100
+
+(defun euler-p6 ()
+  (let* ((one-to-one-hundred (number-sequence 1 100))
+         (sum-of-squares (--> one-to-one-hundred
+                              (seq-map #'(lambda (n) (expt n 2)) it)
+                              (seq-reduce #'+ it 0)))
+         (square-of-sums (--> one-to-one-hundred
+                              (seq-reduce #'+ it 0)
+                              (expt it 2))))
+    (- sum-of-squares square-of-sums)))
+
+(comment
+ (euler-p6))
+
+;; P7
+;; What is the 10001st prime?
+
+;; I'll try a prime sieve this time with a vector and avoiding function calls
+
+;; The seq is assumed to have nil values only at the end of it, at which point we stop
+(defun divisible-by-none? (divisors-seq n)
+  (let ((index 0)
+        (len (length divisors-seq))
+        (divisible-by-none t))
+    (while (< index len)
+      (if-let ((divisor (elt divisors-seq index)))
+          (if (= 0 (mod n divisor))
+            (progn
+              (setq divisible-by-none nil)
+              (setq index len))
+            (setq index (1+ index)))
+          (setq index len)))
+    divisible-by-none))
+
+(defun nth-prime (n)
+  (let* ((primes (make-vector n nil))
+         (found-primes-count 1)
+         (current-num 3))
+    (aset primes 0 2)
+    (while (< found-primes-count n)
+      (if (divisible-by-none? primes current-num)
+          (progn
+            (aset primes found-primes-count current-num)
+            (setq found-primes-count (1+ found-primes-count))))
+      (setq current-num (1+ current-num)))
+    (elt primes (1- n))))
+
+(comment
+ (nth-prime 2)
+ (nth-prime 100)
+ (nth-prime 1000)
+ (nth-prime 10001) ; => 104743 works, but takes a minute or so
+ (divisible-by-none? (vector 2 3 nil nil) 6)
+ (divisible-by-none? (vector 2 3 nil nil) 7)
+ (divisible-by-none? (vector 2 3) 7)
+ )
