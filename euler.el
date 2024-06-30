@@ -290,3 +290,81 @@ euler1
  (divisible-by-none? (vector 2 3 nil nil) 7)
  (divisible-by-none? (vector 2 3) 7)
  )
+
+;; P8
+;; Find thirteen adjacent digits in 1000-digit number that has the greatest product
+
+(setq p8-number 7316717653133062491922511967442657474235534919493496983520312774506326239578318016984801869478851843858615607891129494954595017379583319528532088055111254069874715852386305071569329096329522744304355766896648950445244523161731856403098711121722383113622298934233803081353362766142828064444866452387493035890729629049156044077239071381051585930796086670172427121883998797908792274921901699720888093776657273330010533678812202354218097512545405947522435258490771167055601360483958644670632441572215539753697817977846174064955149290862569321978468622482839722413756570560574902614079729686524145351004748216637048440319989000889524345065854122758866688116427171479924442928230863465674813919123162824586178664583591245665294765456828489128831426076900422421902267105562632111110937054421750694165896040807198403850962455444362981230987879927244284909188845801561660979191338754992005240636899125607176060588611646710940507754100225698315520005593572972571636269561882670428252483600823257530420752963450)
+
+(defun euler-p8 ()
+  (--> (number-to-string p8-number)
+       (string-to-list it)
+       (-partition-in-steps 13 1 it)
+       (seq-map (lambda (partition)
+                  (-as-> partition x
+                         (seq-map #'char-to-string x)
+                         (seq-map #'string-to-number x)
+                         (seq-reduce #'* x 1)))
+                it)
+       (apply #'max it)))
+
+(comment
+ (euler-p8) ; Correctly => 23514624000
+ )
+
+;; P9
+;; Find the Pythagorean Triplet (a < b < c, a^2 + b^2 = c^2) where a + b + c = 1000
+;; then multiply a * b * c
+
+;; This works fine, but it's too slow to generate ALL the combos then filter
+;; down to the ones where the sum is 1000
+(iter-defun triplet-abcs ()
+  (let ((a 1)
+        (b 2)
+        (c 3))
+    (while t
+      (iter-yield (list a b c))
+      (cond ((and (= a (1- b)) (= b (1- c)))
+                (setq a 1
+                      b 2
+                      c (1+ c)))
+            ((= a (1- b))
+                (setq a 1
+                      b (1+ b)))
+            (t (setq a (1+ a)))))))
+
+(iter-defun triplet-abcs-sum-to (n)
+  (let ((a 1)
+        (b 2)
+        (c (- n 3)))
+    (ignore-errors
+      (while t
+        (iter-yield (list a b c))
+        (cond )))))
+
+(defun euler-p9 ()
+  (--> (triplet-abcs)
+       (ifilter (lambda (abc) (= 10 (apply #'+ abc))) it)))
+
+(defun euler-p9-2 ()
+   (let ((a 1)
+        (b 2)
+        (c 3))
+    (while t
+      (if (and (= 1000 (+ a b c)) (= (+ (expt a 2) (expt b 2)) (expt c 2)))
+          (signal 'found (list a b c)))
+      (cond ((and (= a (1- b)) (= b (1- c)))
+                (setq a 1
+                      b 2
+                      c (1+ c)))
+            ((= a (1- b))
+                (setq a 1
+                      b (1+ b)))
+            (t (setq a (1+ a)))))))
+
+(comment
+ (itake-n 10 (triplet-abcs))
+ (itake-n 1 (euler-p9))
+ (euler-p9-2) ; 200 375 425
+ (* 200 375 425) ; 31875000 which is correct
+ )
