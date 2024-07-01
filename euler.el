@@ -268,6 +268,7 @@ euler1
           (setq index len)))
     divisible-by-none))
 
+
 (defun nth-prime (n)
   (let* ((primes (make-vector n nil))
          (found-primes-count 1)
@@ -367,4 +368,43 @@ euler1
  (itake-n 1 (euler-p9))
  (euler-p9-2) ; 200 375 425
  (* 200 375 425) ; 31875000 which is correct
+ )
+
+;; P10
+;; Sum of all primes below two million
+
+(comment
+ (nth-prime 15000)
+ (byte-compile 'nth-prime)
+ (nth-prime 15000) ; 163841 seems faster after byte-compiling
+ (gcmh-time (nth-prime 5000)) ; 6.273944535
+ (byte-compile 'divisible-by-none?)
+ (gcmh-time (nth-prime 5000)) ; 0.455887839 => Byte-compiling all functions involved is best
+ )
+
+
+(byte-compile 'divisible-by-none?)
+
+(defun n-primes (n)
+  (let* ((primes (make-vector n nil))
+         (found-primes-count 1)
+         (current-num 3))
+    (aset primes 0 2)
+    (while (< found-primes-count n)
+      (if (divisible-by-none? primes current-num)
+          (progn
+            (aset primes found-primes-count current-num)
+            (setq found-primes-count (1+ found-primes-count))))
+      (setq current-num (+ 2 current-num)))
+    primes))
+(byte-compile 'n-primes)
+
+(comment
+ (gcmh-time (setq 100k-primes (n-primes 100000))) ; 212.933452947
+ (seq-reduce #'max 100k-primes 0) ; 1299709 oof, not yet at 2 million
+                                  ; Trying optimization where we increment by 2
+ (gcmh-time (setq 100k-primes (n-primes 100000))) ; 193.509257283 - minor savings
+ (gcmh-time (setq 150k-primes (n-primes 150000))) ; 495.608933977
+ (seq-max 150k-primes) ; Whew, just over 2 million
+ (seq-reduce #'+ (seq-filter (lambda (n) (<= n 2000000)) 150k-primes) 0) ; 142913828922 correct
  )
