@@ -477,3 +477,55 @@ euler1
 (comment
   (euler-p11) ; correct => ((87 97 94 89) 70600674)
  )
+
+;; P12
+;; Smallest triangle (sum i from 1 to n) number with over five hundred divisors
+
+;; This is too slow, even with byte compilation
+(defun has-501-divisors-p (n)
+  (let ((max-divisor (floor (/ n 2)))
+        (divisor-count 0)
+        (current-divisor 1))
+    (while (and (< divisor-count 501) (<= current-divisor max-divisor))
+      (if (= 0 (% n current-divisor))
+          (setq divisor-count (1+ divisor-count)))
+      (setq current-divisor (1+ current-divisor)))
+    (= 501 divisor-count)))
+(byte-compile 'has-501-divisors-p)
+
+; We take advantage of the fact that every divisor has a pair
+; These pairs are around the square root
+; This should let us check for 500 divisors in sqrt(n) time rather than n / 2
+(defun has-501-divisors-by-sqrt-p (n)
+  (let ((divisor-fulcrum (floor (sqrt n)))
+        (divisor-count 0)
+        (current-divisor 1))
+    (if (= 0 (% n divisor-fulcrum))
+        (setq divisor-count 1))
+    (while (and (< divisor-count 501) (< current-divisor divisor-fulcrum))
+      (if (= 0 (% n current-divisor))
+          (setq divisor-count (+ 2 divisor-count)))
+      (setq current-divisor (1+ current-divisor)))
+    (message "Count: %d" divisor-count)
+    (>= divisor-count 501)))
+(byte-compile 'has-501-divisors-by-sqrt-p)
+
+(defun euler-p12 ()
+  (let ((triangle-num 1)
+        (natural-num 2))
+    (while (not (has-501-divisors-by-sqrt-p triangle-num))
+      (setq triangle-num (+ triangle-num natural-num)
+            natural-num (1+ natural-num))
+      (message "At natural number %d and triangle number %d" natural-num triangle-num))
+    triangle-num))
+(byte-compile 'euler-p12)
+
+(comment
+ (has-501-divisors-p 12)
+ (seq-reduce #'* (number-sequence 1 501) 1)
+ (has-501-divisors-p (seq-reduce #'* (number-sequence 1 501) 1)) ; => t, pretty quick
+ (euler-p12) ;
+ (has-501-divisors-by-sqrt-p 76576500) ; Cheating a bit, returns true
+ (has-501-divisors-p 76576500)
+ (euler-p12) ; 76576500 works very speedily
+ )
