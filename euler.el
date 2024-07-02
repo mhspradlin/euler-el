@@ -647,3 +647,36 @@ euler1
  p13-numbers
  (euler-p13) ; "55373762303" correct
  )
+
+;; P14
+;; Starting number for Collatz sequence under one million producing the longest chain
+
+;; Naive: Calculate chain length for each number, check one by one
+;; Likely will need to memoize results, but let's see how far we get here
+
+(defun collatz-length (n)
+  (let ((steps 0))
+    (while (> n 1)
+      (setq steps (1+ steps)
+            n (if (= 0 (% n 2))
+                  (/ n 2)
+                (+ 1 (* 3 n)))))
+    (1+ steps)))
+(byte-compile 'collatz-length)
+
+(defun euler-p14 ()
+  (let ((longest-starting-number 0)
+        (longest-sequence 0))
+    (dotimes (i 1000000)
+      (message "Checking: %d" i)
+      (let ((sequence-length (collatz-length i)))
+        (if (> sequence-length longest-sequence)
+            (setq longest-sequence sequence-length
+                  longest-starting-number i))))
+    (list longest-starting-number longest-sequence)))
+(byte-compile 'euler-p14)
+
+(comment
+ (collatz-length 13)
+ (euler-p14) ; (837799 525) Correct
+ )
