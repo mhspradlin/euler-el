@@ -706,3 +706,41 @@ euler1
  (gcmh-time (euler-p14-memo)) ; 3.809513346
  (gcmh-time (euler-p14)) ; 10.652709481
  )
+
+;; P15
+;; Lattice paths
+;; By noting that the number of paths for a position is the sum of paths
+;; for the positions above and to the left of it, this naturally has
+;; a dynamic programming solution. Recursive expression might work if
+;; memoized
+
+(defun grid-create (cols rows)
+  (vector rows (make-vector (* cols rows) nil)))
+(defun grid-row-size (grid)
+  (elt grid 0))
+(defun grid-data (grid)
+  (elt grid 1))
+(defun grid-get (grid col row)
+  (elt (grid-data grid) (+ (* (grid-row-size grid) row) col)))
+(defun grid-set (grid col row value)
+  (aset (grid-data grid) (+ (* (grid-row-size grid) row) col) value))
+
+(defun euler-p15 ()
+  (let ((path-counts (grid-create 21 21)))
+    (dotimes (row 21)
+      (dotimes (col 21)
+        (cond ((= 0 row) (grid-set path-counts col row 1))
+              ((= 0 col) (grid-set path-counts col row
+                               (grid-get path-counts col (1- row))))
+               (t        (grid-set path-counts col row
+                                   (+ (grid-get path-counts (1- col) row)
+                                      (grid-get path-counts col      (1- row))))))))
+    (grid-get path-counts 20 20)))
+
+(comment
+ (setq test-grid (grid-create 10 10))
+ (grid-get test-grid 5 5)
+ (grid-set test-grid 5 5 123)
+ (grid-get test-grid 5 5)
+ (euler-p15) ; 137846528820 Correct
+ )
