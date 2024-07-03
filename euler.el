@@ -744,3 +744,18 @@ euler1
  (grid-get test-grid 5 5)
  (euler-p15) ; 137846528820 Correct
  )
+
+;; P16
+;; Sum of digits of 2^1000
+
+(defun euler-p16 ()
+  (--> (expt 2 1000)
+       (number-to-string it)
+       (string-to-list it)
+       (seq-map #'char-to-string it)
+       (seq-map #'string-to-number it)
+       (apply #'+ it)))
+
+(comment
+ (euler-p16) ; 1366 bignums are great, makes this very easy
+ )
