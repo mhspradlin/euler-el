@@ -676,6 +676,29 @@ euler1
     (list longest-starting-number longest-sequence)))
 (byte-compile 'euler-p14)
 
+(defun euler-p14-memo ()
+  (let ((sequence-lengths (make-hash-table)))
+    (puthash 0 0 sequence-lengths)
+    (puthash 1 1 sequence-lengths)
+    (dotimes (i 1000000)
+     ; (message "Checking %d" i) ; This adds a LOT of time to the execution
+      (let (steps '())
+        (while (not (gethash i sequence-lengths))
+          (push i steps)
+          (setq i (if (= 0 (% i 2))
+                      (/ i 2)
+                    (+ 1 (* 3 i)))))
+        (let ((known-length (gethash i sequence-lengths)))
+          (-each-indexed steps (lambda (i n) (puthash n (+ known-length (1+ i)) sequence-lengths))))))
+    (let ((max-length 0)
+          (max-length-start 0))
+      (maphash (lambda (start length)
+                 (when (> length max-length)
+                   (setq max-length length
+                         max-length-start start))) sequence-lengths)
+      (list max-length-start max-length))))
+(byte-compile 'euler-p14-memo)
+
 (comment
  (collatz-length 13)
  (euler-p14) ; (837799 525) Correct
