@@ -668,7 +668,7 @@ euler1
   (let ((longest-starting-number 0)
         (longest-sequence 0))
     (dotimes (i 1000000)
-      (message "Checking: %d" i)
+     ; (message "Checking: %d" i)
       (let ((sequence-length (collatz-length i)))
         (if (> sequence-length longest-sequence)
             (setq longest-sequence sequence-length
@@ -702,4 +702,7 @@ euler1
 (comment
  (collatz-length 13)
  (euler-p14) ; (837799 525) Correct
+ (euler-p14-memo) ; (837799 525)
+ (gcmh-time (euler-p14-memo)) ; 3.809513346
+ (gcmh-time (euler-p14)) ; 10.652709481
  )
