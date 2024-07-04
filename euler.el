@@ -759,3 +759,84 @@ euler1
 (comment
  (euler-p16) ; 1366 bignums are great, makes this very easy
  )
+
+;; P17
+;; How many letters are in the words for the numbers 1 to 1000 inclusive?
+
+(setq number-words
+    '((1000 . "one thousand" )
+      (900  . "nine hundred" )
+      (800  . "eight hundred")
+      (700  . "seven hundred")
+      (600  . "six hundred"  )
+      (500  . "five hundred" )
+      (400  . "four hundred" )
+      (300  . "three hundred")
+      (200  . "two hundred"  )
+      (100  . "one hundred"  )
+      (90   . "ninety"       )
+      (80   . "eighty"       )
+      (70   . "seventy"      )
+      (60   . "sixty"        )
+      (50   . "fifty"        )
+      (40   . "forty"        )
+      (30   . "thirty"       )
+      (20   . "twenty"       )
+      (19   . "nineteen"     )
+      (18   . "eighteen"     )
+      (17   . "seventeen"    )
+      (16   . "sixteen"      )
+      (15   . "fifteen"      )
+      (14   . "fourteen"     )
+      (13   . "thirteen"     )
+      (12   . "twelve"       )
+      (11   . "eleven"       )
+      (10   . "ten"          )
+      (9    . "nine"         )
+      (8    . "eight"        )
+      (7    . "seven"        )
+      (6    . "six"          )
+      (5    . "five"         )
+      (4    . "four"         )
+      (3    . "three"        )
+      (2    . "two"          )
+      (1    . "one"          )))
+
+(defun number-to-sentence (n)
+  "Only works up to 1,000"
+  (let ((sentence '()))
+    (when (= n 1000)
+        (push (alist-get 1000 number-words) sentence)
+        (setq n (- n 1000)))
+    (when-let ((_ (>= n 100))
+               (hundreds (* 100 (/ n 100))))
+        (push (alist-get hundreds number-words) sentence)
+        (setq n (- n hundreds)))
+    (if (and (> n 0) (length> sentence 0))
+          (push "and" sentence))
+    (when-let ((_ (>= n 20))
+               (tens (* 10 (/ n 10))))
+      (push (alist-get tens number-words) sentence)
+      (setq n (- n tens)))
+    (when (> n 0)
+      (push (alist-get n number-words) sentence))
+    (--> sentence
+         (reverse it)
+         (mapconcat 'identity it " "))))
+
+(defun euler-p17 ()
+  (--> (number-sequence 1 1000)
+       (mapcar #'number-to-sentence it)
+       (mapconcat 'identity it " ")
+       (replace-regexp-in-string "[^a-z]" "" it)
+       (length it)))
+
+(comment
+ (round 14 10) ; 1 huh?
+ (number-to-sentence 123) ; "one hundred and twenty three"
+ (number-to-sentence 109) ; "one hundred and nine"
+ (number-to-sentence 100) ; "one hundred"
+ (number-to-sentence 819) ; "eight hundred and nineteen"
+ (replace-regexp-in-string "[^a-z]" "" "one hundred and nineteen") ; "onehundredandnineteen"
+ (euler-p17) ; 21124 which is correct
+ )
